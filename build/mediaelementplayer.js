@@ -16,30 +16,36 @@ var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
 var minDoc = _dereq_(1);
 
+var doccy;
+
 if (typeof document !== 'undefined') {
-    module.exports = document;
+    doccy = document;
 } else {
-    var doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
+    doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
 
     if (!doccy) {
         doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'] = minDoc;
     }
-
-    module.exports = doccy;
 }
+
+module.exports = doccy;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"1":1}],3:[function(_dereq_,module,exports){
 (function (global){
+var win;
+
 if (typeof window !== "undefined") {
-    module.exports = window;
+    win = window;
 } else if (typeof global !== "undefined") {
-    module.exports = global;
+    win = global;
 } else if (typeof self !== "undefined"){
-    module.exports = self;
+    win = self;
 } else {
-    module.exports = {};
+    win = {};
 }
+
+module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(_dereq_,module,exports){
@@ -1366,7 +1372,7 @@ Object.assign(_player2.default.prototype, {
 				x = e.pageX;
 			}
 
-			if (media.duration) {
+			if (t.getDuration()) {
 				if (x < offsetStyles.left) {
 					x = offsetStyles.left;
 				} else if (x > width + offsetStyles.left) {
@@ -1375,9 +1381,9 @@ Object.assign(_player2.default.prototype, {
 
 				pos = x - offsetStyles.left;
 				percentage = pos / width;
-				t.newTime = percentage <= 0.02 ? 0 : percentage * media.duration;
+				t.newTime = percentage <= 0.02 ? 0 : percentage * t.getDuration();
 
-				if (mouseIsDown && media.currentTime !== null && t.newTime.toFixed(4) !== media.currentTime.toFixed(4)) {
+				if (mouseIsDown && t.getCurrentTime() !== null && t.newTime.toFixed(4) !== t.getCurrentTime().toFixed(4)) {
 					t.setCurrentRailHandle(t.newTime);
 					t.updateCurrent(t.newTime);
 				}
@@ -1409,10 +1415,10 @@ Object.assign(_player2.default.prototype, {
 			}
 		},
 		    updateSlider = function updateSlider() {
-			var seconds = media.currentTime,
+			var seconds = t.getCurrentTime(),
 			    timeSliderText = _i18n2.default.t('mejs.time-slider'),
 			    time = (0, _time.secondsToTimeCode)(seconds, player.options.alwaysShowHours, player.options.showTimecodeFrameCount, player.options.framesPerSecond, player.options.secondsDecimalLength),
-			    duration = media.duration;
+			    duration = t.getDuration();
 
 			t.slider.setAttribute('role', 'slider');
 			t.slider.tabIndex = 0;
@@ -1437,8 +1443,8 @@ Object.assign(_player2.default.prototype, {
 			}
 		},
 		    handleMouseup = function handleMouseup() {
-			if (mouseIsDown && media.currentTime !== null && t.newTime.toFixed(4) !== media.currentTime.toFixed(4)) {
-				media.setCurrentTime(t.newTime);
+			if (mouseIsDown && t.getCurrentTime() !== null && t.newTime.toFixed(4) !== t.getCurrentTime().toFixed(4)) {
+				t.setCurrentTime(t.newTime);
 				player.setCurrentRail();
 				t.updateCurrent(t.newTime);
 			}
@@ -1462,22 +1468,22 @@ Object.assign(_player2.default.prototype, {
 			if (t.options.keyActions.length) {
 
 				var keyCode = e.which || e.keyCode || 0,
-				    duration = media.duration,
+				    duration = t.getDuration(),
 				    seekForward = player.options.defaultSeekForwardInterval(media),
 				    seekBackward = player.options.defaultSeekBackwardInterval(media);
 
-				var seekTime = media.currentTime;
+				var seekTime = t.getCurrentTime();
 
 				switch (keyCode) {
 					case 37:
 					case 40:
-						if (media.duration !== Infinity) {
+						if (t.getDuration() !== Infinity) {
 							seekTime -= seekBackward;
 						}
 						break;
 					case 39:
 					case 38:
-						if (media.duration !== Infinity) {
+						if (t.getDuration() !== Infinity) {
 							seekTime += seekForward;
 						}
 						break;
@@ -1513,11 +1519,11 @@ Object.assign(_player2.default.prototype, {
 					media.pause();
 				}
 
-				if (seekTime < media.duration && !startedPaused) {
+				if (seekTime < t.getDuration() && !startedPaused) {
 					setTimeout(restartPlayer, 1100);
 				}
 
-				media.setCurrentTime(seekTime);
+				t.setCurrentTime(seekTime);
 
 				e.preventDefault();
 				e.stopPropagation();
@@ -1533,7 +1539,7 @@ Object.assign(_player2.default.prototype, {
 		for (var i = 0, total = events.length; i < total; i++) {
 			t.slider.addEventListener(events[i], function (e) {
 				t.forcedHandlePause = false;
-				if (media.duration !== Infinity) {
+				if (t.getDuration() !== Infinity) {
 					if (e.which === 1 || e.which === 0) {
 						if (!media.paused) {
 							t.media.pause();
@@ -1565,7 +1571,7 @@ Object.assign(_player2.default.prototype, {
 			});
 		}
 		t.slider.addEventListener('mouseenter', function (e) {
-			if (e.target === t.slider && media.duration !== Infinity) {
+			if (e.target === t.slider && t.getDuration() !== Infinity) {
 				t.container.addEventListener('mousemove', function (event) {
 					var target = event.target;
 					if (target === t.slider || target.closest('.' + t.options.classPrefix + 'time-slider')) {
@@ -1581,7 +1587,7 @@ Object.assign(_player2.default.prototype, {
 			}
 		});
 		t.slider.addEventListener('mouseleave', function () {
-			if (media.duration !== Infinity) {
+			if (t.getDuration() !== Infinity) {
 				if (!mouseIsDown) {
 					t.globalUnbind('mousemove.dur');
 					if (t.timefloat) {
@@ -1596,7 +1602,7 @@ Object.assign(_player2.default.prototype, {
 
 		media.addEventListener('progress', function (e) {
 			var broadcast = controls.querySelector('.' + t.options.classPrefix + 'broadcast');
-			if (media.duration !== Infinity) {
+			if (t.getDuration() !== Infinity) {
 				if (broadcast) {
 					t.slider.style.display = '';
 					broadcast.remove();
@@ -1616,7 +1622,7 @@ Object.assign(_player2.default.prototype, {
 
 		media.addEventListener('timeupdate', function (e) {
 			var broadcast = controls.querySelector('.' + t.options.classPrefix + 'broadcast');
-			if (media.duration !== Infinity) {
+			if (t.getDuration() !== Infinity) {
 				if (broadcast) {
 					t.slider.style.display = '';
 					broadcast.remove();
@@ -1637,7 +1643,7 @@ Object.assign(_player2.default.prototype, {
 		});
 
 		t.container.addEventListener('controlsresize', function (e) {
-			if (media.duration !== Infinity) {
+			if (t.getDuration() !== Infinity) {
 				player.setProgressRail(e);
 				if (!t.forcedHandlePause) {
 					player.setCurrentRail(e);
@@ -1651,8 +1657,8 @@ Object.assign(_player2.default.prototype, {
 
 		var percent = null;
 
-		if (target && target.buffered && target.buffered.length > 0 && target.buffered.end && target.duration) {
-			percent = target.buffered.end(target.buffered.length - 1) / target.duration;
+		if (target && target.buffered && target.buffered.length > 0 && target.buffered.end && t.getDuration()) {
+			percent = target.buffered.end(target.buffered.length - 1) / t.getDuration();
 		} else if (target && target.bytesTotal !== undefined && target.bytesTotal > 0 && target.bufferedBytes !== undefined) {
 				percent = target.bufferedBytes / target.bytesTotal;
 			} else if (e && e.lengthComputable && e.total !== 0) {
@@ -1676,13 +1682,13 @@ Object.assign(_player2.default.prototype, {
 		t.setCurrentRailMain(t);
 	},
 	setCurrentRailMain: function setCurrentRailMain(t, fakeTime) {
-		if (t.media.currentTime !== undefined && t.media.duration) {
-			var nTime = typeof fakeTime === 'undefined' ? t.media.currentTime : fakeTime;
+		if (t.getCurrentTime() !== undefined && t.getDuration()) {
+			var nTime = typeof fakeTime === 'undefined' ? t.getCurrentTime() : fakeTime;
 
 			if (t.total && t.handle) {
 				var tW = parseFloat(getComputedStyle(t.total).width);
 
-				var newWidth = Math.round(tW * nTime / t.media.duration),
+				var newWidth = Math.round(tW * nTime / t.getDuration()),
 				    handlePos = newWidth - Math.round(t.handle.offsetWidth / 2);
 
 				handlePos = handlePos < 0 ? 0 : handlePos;
@@ -1776,8 +1782,9 @@ Object.assign(_player2.default.prototype, {
 	},
 	updateCurrent: function updateCurrent() {
 		var t = this;
+		
 
-		var currentTime = t.media.currentTime;
+		var currentTime = t.getCurrentTime();
 
 		if (isNaN(currentTime)) {
 			currentTime = 0;
@@ -1790,7 +1797,7 @@ Object.assign(_player2.default.prototype, {
 	updateDuration: function updateDuration() {
 		var t = this;
 
-		var duration = t.media.duration;
+		var duration = t.getDuration();
 
 		if (isNaN(duration) || duration === Infinity || duration < 0) {
 			t.media.duration = t.options.duration = duration = 0;
@@ -4574,6 +4581,11 @@ var MediaElementPlayer = function () {
 		key: 'getCurrentTime',
 		value: function getCurrentTime() {
 			return this.media.currentTime;
+		}
+	}, {
+		key: 'getDuration',
+		value: function getDuration() {
+			return this.media.duration;
 		}
 	}, {
 		key: 'setVolume',
