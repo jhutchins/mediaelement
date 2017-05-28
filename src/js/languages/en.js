@@ -23,6 +23,10 @@ export const EN = {
 	// features/fullscreen.js
 	"mejs.fullscreen": "Fullscreen",
 
+  //features/lock.js
+  "mejs.lock": "Lock",
+  "mejs.unlock": "Unlock",
+
 	// features/playpause.js
 	"mejs.play": "Play",
 	"mejs.pause": "Pause",
